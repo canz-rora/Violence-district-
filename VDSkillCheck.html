@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Violence District - Skill Check</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #080b13;
+    color: white;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.game {
+    width: 100%;
+    max-width: 550px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.title {
+    font-size: 27px;
+    letter-spacing: 5px;
+    font-weight: bold;
+}
+
+.subtitle {
+    color: #68758b;
+    font-size: 10px;
+    letter-spacing: 3px;
+    margin-top: 8px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.mode-box {
+    display: flex;
+    width: 100%;
+    max-width: 320px;
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.mode-button {
+    flex: 1;
+    background: #202938;
+    color: #8b96a9;
+    padding: 13px 8px;
+    font-size: 11px;
+    border: 1px solid #303b4d;
+}
+
+.mode-button.active {
+    background: white;
+    color: black;
+    border-color: white;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    max-width: 390px;
+    margin-bottom: 30px;
+    gap: 8px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat h3 {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #778399;
+    margin-bottom: 8px;
+}
+
+.stat p {
+    font-size: 23px;
+    font-weight: bold;
+}
+
+#score {
+    color: #ff4545;
+}
+
+.circle-container {
+    width: min(85vw, 390px);
+    aspect-ratio: 1;
+    position: relative;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.result {
+    height: 30px;
+    margin-top: 20px;
+    font-size: 19px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+.good {
+    color: #8dffad;
+}
+
+.perfect {
+    color: white;
+    text-shadow: 0 0 15px white;
+}
+
+.miss {
+    color: #ff3333;
+}
+
+.waiting {
+    color: #718096;
+}
+
+.control-box {
+    width: 100%;
+    max-width: 320px;
+    margin-top: 22px;
+}
+
+.control-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #8b96a9;
+    margin-bottom: 12px;
+}
+
+input[type=range] {
+    width: 100%;
+    accent-color: white;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+    width: 100%;
+    max-width: 320px;
+}
+
+button {
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.start-button {
+    flex: 1;
+    background: white;
+    color: black;
+}
+
+.hit-button {
+    flex: 1;
+    background: #ff3030;
+    color: white;
+}
+
+.hit-button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.restart-button {
+    flex: 1;
+    background: #252c39;
+    color: white;
+}
+
+button:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.hint {
+    font-size: 10px;
+    color: #68758b;
+    letter-spacing: 2px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.94);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    padding: 20px;
+}
+
+.result-box {
+    width: 100%;
+    max-width: 350px;
+    background: #111722;
+    border: 1px solid #394150;
+    padding: 35px 25px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.result-box h1 {
+    letter-spacing: 4px;
+    margin-bottom: 25px;
+}
+
+.result-box p {
+    margin: 17px;
+    color: #9ca9ba;
+}
+
+.result-box span {
+    color: white;
+    font-weight: bold;
+}
+
+.result-box button {
+    width: 100%;
+    margin-top: 20px;
+    background: white;
+    color: black;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <div class="title">SKILL CHECK</div>
+
+    <div class="subtitle" id="sessionTime">
+        VIOLENCE DISTRICT SYSTEM
+    </div>
+
+    <div class="mode-box">
+        <button class="mode-button active" id="ksMode">MODE KS</button>
+        <button class="mode-button" id="normalMode">MODE NORMAL</button>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <h3>HIT</h3>
+            <p id="hit">0</p>
+        </div>
+
+        <div class="stat">
+            <h3>PERFECT</h3>
+            <p id="perfect">0</p>
+        </div>
+
+        <div class="stat">
+            <h3>MISS</h3>
+            <p id="miss">0</p>
+        </div>
+
+        <div class="stat">
+            <h3>SCORE</h3>
+            <p id="score">0</p>
+        </div>
+    </div>
+
+    <div class="circle-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="result" id="result">READY</div>
+
+    <!-- NEEDLE SPEED -->
+
+    <div class="control-box">
+        <div class="control-header">
+            <span>NEEDLE SPEED</span>
+            <span id="speedValue">250°/s</span>
+        </div>
+
+        <input type="range" id="speedSlider"
+               min="60" max="540" value="250">
+    </div>
+
+    <!-- SKILL CHECK SIZE -->
+
+    <div class="control-box">
+        <div class="control-header">
+            <span>SKILL CHECK SIZE</span>
+            <span id="sizeValue">100%</span>
+        </div>
+
+        <input type="range" id="sizeSlider"
+               min="50" max="200" value="100">
+    </div>
+
+    <div class="buttons">
+        <button class="start-button" id="startButton">START</button>
+        <button class="hit-button" id="hitButton" disabled>HIT</button>
+        <button class="restart-button" id="restartButton">RESET</button>
+    </div>
+
+    <div class="hint" id="hint">
+        PRESS SPACE OR TAP HIT
+    </div>
+
+</div>
+
+<div class="overlay" id="overlay">
+    <div class="result-box">
+        <h1 id="endTitle">SESSION END</h1>
+
+        <p>MODE : <span id="finalMode">KS</span></p>
+        <p>HIT : <span id="finalHit">0</span></p>
+        <p>PERFECT : <span id="finalPerfect">0</span></p>
+        <p>MISS : <span id="finalMiss">0</span></p>
+        <p>SCORE : <span id="finalScore">0</span></p>
+        <p>TIME : <span id="finalTime">00:00</span></p>
+
+        <button onclick="restartGame()">PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+
+// ===================================
+// ELEMENTS
+// ===================================
+
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+const hitButton = document.getElementById("hitButton");
+const startButton = document.getElementById("startButton");
+const resultEl = document.getElementById("result");
+
+
+// ===================================
+// SETTINGS
+// ===================================
+
+let hit = 0;
+let perfect = 0;
+let miss = 0;
+let score = 0;
+
+let needleAngle = 0;
+let needleSpeed = 250;
+
+let targetAngle = 180;
+
+let running = false;
+let gameMode = "KS";
+
+let elapsedTime = 0;
+let startTimestamp = 0;
+let lastFrameTime = 0;
+
+let animationId = null;
+
+let skillActive = false;
+let nextSkillTime = 0;
+let skillDeadline = 0;
+
+let centerX = 0;
+let centerY = 0;
+let radius = 0;
+
+let sizeMultiplier = 1;
+
+// SKILL CHECK SIZE
+const BASE_HIT_HALF = 14;
+const BASE_PERFECT_SIZE = 7;
+
+// NEEDLE LENGTH
+const NEEDLE_LENGTH = 95;
+
+// NORMAL MODE
+const SKILL_DURATION = 2200;
+
+// INITIAL NEEDLE POSITION
+const NORMAL_START_ANGLE = 0;
+
+// MINIMUM DISTANCE FROM STARTING NEEDLE
+const MIN_SPAWN_DISTANCE = 75;
+
+
+// ===================================
+// GET SCALED SETTINGS
+// ===================================
+
+function getHitHalf() {
+    return BASE_HIT_HALF * sizeMultiplier;
+}
+
+function getPerfectSize() {
+    return BASE_PERFECT_SIZE * sizeMultiplier;
+}
+
+
+// ===================================
+// CANVAS
+// ===================================
+
+function resizeCanvas() {
+
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    centerX = rect.width / 2;
+    centerY = rect.height / 2;
+
+    radius = Math.min(rect.width, rect.height) * 0.39;
+
+    drawCircle();
+}
+
+window.addEventListener("resize", resizeCanvas);
+
+
+// ===================================
+// ANGLES
+// ===================================
+
+function normalizeAngle(angle) {
+    return (angle + 360) % 360;
+}
+
+function angleDifference(a, b) {
+    let diff = Math.abs(a - b) % 360;
+    return Math.min(diff, 360 - diff);
+}
+
+
+// ===================================
+// RANDOM TARGET
+// ===================================
+
+function moveTarget() {
+
+    let newAngle;
+    let attempts = 0;
+
+    do {
+        newAngle = Math.random() * 360;
+        attempts++;
+    } while (
+        angleDifference(newAngle, targetAngle) < 110 &&
+        attempts < 500
+    );
+
+    targetAngle = newAngle;
+}
+
+
+// ===================================
+// NORMAL MODE SPAWN
+// ===================================
+
+function spawnNormalTarget() {
+
+    let newAngle;
+    let attempts = 0;
+
+    do {
+        newAngle = Math.random() * 360;
+        attempts++;
+    } while (
+        angleDifference(newAngle, NORMAL_START_ANGLE)
+            < MIN_SPAWN_DISTANCE &&
+        attempts < 500
+    );
+
+    targetAngle = newAngle;
+
+    // JARUM SELALU MULAI DARI ATAS
+    needleAngle = NORMAL_START_ANGLE;
+
+    skillActive = true;
+
+    skillDeadline = performance.now() + SKILL_DURATION;
+
+    hitButton.disabled = false;
+
+    showResult("SKILL CHECK!", "waiting");
+
+    drawCircle();
+}
+
+
+// ===================================
+// DRAW ARC
+// ===================================
+
+function drawArc(start, end, color, width) {
+
+    ctx.beginPath();
+
+    ctx.arc(
+        centerX,
+        centerY,
+        radius,
+        (start - 90) * Math.PI / 180,
+        (end - 90) * Math.PI / 180
+    );
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "butt";
+    ctx.stroke();
+}
+
+
+// ===================================
+// DRAW TARGET OUTLINE
+// ===================================
+
+function drawTarget() {
+
+    const hitHalf = getHitHalf();
+    const perfectSize = getPerfectSize();
+
+    const hitStart = targetAngle - hitHalf;
+    const hitEnd = targetAngle + hitHalf;
+
+    // OUTER WHITE OUTLINE
+    drawArc(
+        hitStart,
+        hitEnd,
+        "#ffffff",
+        14
+    );
+
+    // INNER DARK AREA
+    // This leaves white edges on BOTH sides.
+    drawArc(
+        hitStart,
+        hitEnd,
+        "#080b13",
+        8
+    );
+
+    // PERFECT CONNECTED TO HIT
+    const perfectStart = hitStart - perfectSize;
+    const perfectEnd = hitStart;
+
+    ctx.save();
+
+    ctx.shadowColor = "#ffffff";
+    ctx.shadowBlur = 12;
+
+    drawArc(
+        perfectStart,
+        perfectEnd,
+        "#ffffff",
+        14
+    );
+
+    ctx.restore();
+}
+
+
+// ===================================
+// DRAW NEEDLE
+// ===================================
+
+function drawNeedle() {
+
+    const needleRad =
+        (needleAngle - 90) * Math.PI / 180;
+
+    const innerRadius = Math.max(0, radius - NEEDLE_LENGTH);
+    const outerRadius = radius - 2;
+
+    const startX =
+        centerX + Math.cos(needleRad) * innerRadius;
+
+    const startY =
+        centerY + Math.sin(needleRad) * innerRadius;
+
+    const endX =
+        centerX + Math.cos(needleRad) * outerRadius;
+
+    const endY =
+        centerY + Math.sin(needleRad) * outerRadius;
+
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+
+    ctx.strokeStyle = "#ff2020";
+    ctx.lineWidth = 5;
+    ctx.lineCap = "round";
+
+    ctx.shadowColor = "red";
+    ctx.shadowBlur = 18;
+
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(endX, endY, 3, 0, Math.PI * 2);
+
+    ctx.fillStyle = "#ff3030";
+    ctx.fill();
+
+    ctx.restore();
+}
+
+
+// ===================================
+// DRAW CIRCLE
+// ===================================
+
+function drawCircle() {
+
+    const rect = canvas.getBoundingClientRect();
+
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    // MAIN CIRCLE
+
+    ctx.beginPath();
+
+    ctx.arc(
+        centerX,
+        centerY,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.strokeStyle = "rgba(190,195,210,0.38)";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // DRAW TARGET ONLY WHEN ACTIVE
+
+    if (skillActive || (gameMode === "KS" && running)) {
+        drawTarget();
+        drawNeedle();
+    }
+}
+
+
+// ===================================
+// RESULT
+// ===================================
+
+function showResult(text, type) {
+    resultEl.innerText = text;
+    resultEl.className = "result " + type;
+}
+
+
+// ===================================
+// STATS
+// ===================================
+
+function updateStats() {
+
+    document.getElementById("hit").innerText = hit;
+    document.getElementById("perfect").innerText = perfect;
+    document.getElementById("miss").innerText = miss;
+    document.getElementById("score").innerText = score;
+
+}
+
+
+// ===================================
+// TIME
+// ===================================
+
+function formatTime(seconds) {
+
+    const minutes = Math.floor(seconds / 60);
+    const remaining = seconds % 60;
+
+    return (
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(remaining).padStart(2, "0")
+    );
+}
+
+
+// ===================================
+// NORMAL SCHEDULER
+// ===================================
+
+function scheduleNextSkill() {
+
+    const randomDelay = Math.floor(Math.random() * 4) + 1;
+
+    nextSkillTime = performance.now() + randomDelay * 1000;
+
+}
+
+function hideSkill() {
+
+    skillActive = false;
+
+    hitButton.disabled = true;
+
+    showResult("WAITING...", "waiting");
+
+    scheduleNextSkill();
+
+    drawCircle();
+
+}
+
+
+// ===================================
+// GAME OVER
+// ===================================
+
+function gameOver(reason) {
+
+    running = false;
+    skillActive = false;
+
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+
+    hitButton.disabled = true;
+
+    document.getElementById("endTitle").innerText = reason;
+
+    document.getElementById("finalMode").innerText = gameMode;
+    document.getElementById("finalHit").innerText = hit;
+    document.getElementById("finalPerfect").innerText = perfect;
+    document.getElementById("finalMiss").innerText = miss;
+    document.getElementById("finalScore").innerText = score;
+    document.getElementById("finalTime").innerText =
+        formatTime(elapsedTime);
+
+    document.getElementById("overlay").style.display = "flex";
+
+}
+
+
+// ===================================
+// HIT SYSTEM
+// ===================================
+
+function performHit() {
+
+    if (!running) return;
+
+    if (gameMode === "NORMAL" && !skillActive) return;
+
+    const perfectCenter =
+        targetAngle - getHitHalf() - getPerfectSize() / 2;
+
+    const perfectDiff = angleDifference(
+        needleAngle,
+        perfectCenter
+    );
+
+    const hitDiff = angleDifference(
+        needleAngle,
+        targetAngle
+    );
+
+    if (perfectDiff <= getPerfectSize() / 2) {
+
+        perfect++;
+        score += 250;
+
+        showResult("PERFECT!", "perfect");
+
+    }
+    else if (hitDiff <= getHitHalf()) {
+
+        hit++;
+        score += 100;
+
+        showResult("GOOD HIT!", "good");
+
+    }
+    else {
+
+        miss++;
+        score = Math.max(0, score - 25);
+
+        updateStats();
+
+        showResult("MISS!", "miss");
+
+        if (gameMode === "NORMAL") {
+            gameOver("YOU LOSE");
+            return;
+        }
+
+    }
+
+    updateStats();
+
+    if (gameMode === "KS") {
+
+        moveTarget();
+
+    } else {
+
+        hideSkill();
+
+    }
+
+    drawCircle();
+
+}
+
+
+// ===================================
+// GAME LOOP
+// ===================================
+
+function gameLoop(timestamp) {
+
+    if (!running) return;
+
+    if (!lastFrameTime) {
+        lastFrameTime = timestamp;
+    }
+
+    const deltaTime = Math.min(
+        (timestamp - lastFrameTime) / 1000,
+        0.05
+    );
+
+    lastFrameTime = timestamp;
+
+    needleAngle = normalizeAngle(
+        needleAngle + needleSpeed * deltaTime
+    );
+
+    elapsedTime = Math.floor(
+        (timestamp - startTimestamp) / 1000
+    );
+
+    document.getElementById("sessionTime").innerText =
+        "SESSION TIME : " + formatTime(elapsedTime);
+
+
+    // NORMAL MODE
+
+    if (gameMode === "NORMAL") {
+
+        const now = performance.now();
+
+        if (!skillActive && now >= nextSkillTime) {
+            spawnNormalTarget();
+        }
+
+        if (skillActive && now >= skillDeadline) {
+
+            miss++;
+
+            score = Math.max(0, score - 25);
+
+            updateStats();
+
+            showResult("TIME OUT!", "miss");
+
+            gameOver("YOU LOSE");
+
+            return;
+        }
+
+    }
+
+    drawCircle();
+
+    animationId = requestAnimationFrame(gameLoop);
+
+}
+
+
+// ===================================
+// MODE SELECT
+// ===================================
+
+function setMode(mode) {
+
+    if (running) return;
+
+    gameMode = mode;
+
+    document.getElementById("ksMode")
+        .classList.toggle("active", mode === "KS");
+
+    document.getElementById("normalMode")
+        .classList.toggle("active", mode === "NORMAL");
+
+    skillActive = false;
+    hitButton.disabled = true;
+
+    if (mode === "KS") {
+
+        showResult("READY - KS MODE", "");
+
+        document.getElementById("hint").innerText =
+            "PRESS SPACE OR TAP HIT";
+
+    } else {
+
+        showResult("READY - NORMAL MODE", "");
+
+        document.getElementById("hint").innerText =
+            "WAIT FOR SKILL CHECK TO APPEAR";
+
+    }
+
+    drawCircle();
+
+}
+
+document.getElementById("ksMode").addEventListener(
+    "click",
+    () => setMode("KS")
+);
+
+document.getElementById("normalMode").addEventListener(
+    "click",
+    () => setMode("NORMAL")
+);
+
+
+// ===================================
+// SPEED SLIDER
+// ===================================
+
+document.getElementById("speedSlider")
+.addEventListener("input", function() {
+
+    needleSpeed = Number(this.value);
+
+    document.getElementById("speedValue").innerText =
+        needleSpeed + "°/s";
+
+});
+
+
+// ===================================
+// SIZE SLIDER
+// ===================================
+
+document.getElementById("sizeSlider")
+.addEventListener("input", function() {
+
+    sizeMultiplier = Number(this.value) / 100;
+
+    document.getElementById("sizeValue").innerText =
+        this.value + "%";
+
+    drawCircle();
+
+});
+
+
+// ===================================
+// INPUT
+// ===================================
+
+hitButton.addEventListener("click", performHit);
+
+document.addEventListener("keydown", function(event) {
+
+    if (event.code === "Space") {
+
+        event.preventDefault();
+
+        performHit();
+
+    }
+
+});
+
+
+// ===================================
+// START GAME
+// ===================================
+
+function startGame() {
+
+    if (running) return;
+
+    running = true;
+
+    lastFrameTime = 0;
+
+    startTimestamp = performance.now();
+
+    if (gameMode === "NORMAL") {
+
+        // WAIT BEFORE FIRST SKILL CHECK
+
+        needleAngle = NORMAL_START_ANGLE;
+
+        skillActive = false;
+
+        hitButton.disabled = true;
+
+        scheduleNextSkill();
+
+        showResult("WAITING...", "waiting");
+
+    } else {
+
+        skillActive = true;
+
+        moveTarget();
+
+        showResult("GOOD LUCK!", "");
+
+        hitButton.disabled = false;
+
+    }
+
+    startButton.innerText = "RUNNING";
+    startButton.disabled = true;
+    startButton.style.opacity = "0.5";
+
+    animationId = requestAnimationFrame(gameLoop);
+
+}
+
+
+// ===================================
+// RESET
+// ===================================
+
+function restartGame() {
+
+    running = false;
+
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+
+    hit = 0;
+    perfect = 0;
+    miss = 0;
+    score = 0;
+
+    needleAngle = NORMAL_START_ANGLE;
+    targetAngle = 180;
+
+    elapsedTime = 0;
+    startTimestamp = 0;
+    lastFrameTime = 0;
+
+    skillActive = false;
+    nextSkillTime = 0;
+    skillDeadline = 0;
+
+    updateStats();
+
+    document.getElementById("sessionTime").innerText =
+        "VIOLENCE DISTRICT SYSTEM";
+
+    startButton.innerText = "START";
+    startButton.disabled = false;
+    startButton.style.opacity = "1";
+
+    hitButton.disabled = true;
+
+    document.getElementById("overlay").style.display = "none";
+
+    showResult("READY", "");
+
+    drawCircle();
+
+}
+
+
+// ===================================
+// BUTTONS
+// ===================================
+
+startButton.addEventListener("click", startGame);
+
+document.getElementById("restartButton")
+.addEventListener("click", restartGame);
+
+
+// ===================================
+// INITIALIZE
+// ===================================
+
+resizeCanvas();
+drawCircle();
+
+</script>
+
+</body>
+</html>
